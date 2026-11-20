@@ -1,0 +1,260 @@
+{
+  "name": "WF3 · Test runner",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "a2f2fff1-e48e-4dfc-a3d7-dc76ecf3cd16",
+      "name": "Run test"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select n, question, 'test' as source, 'test-runner' as asked_by,\n       expected, expect_no_match\nfrom test_questions\norder by n;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        224,
+        0
+      ],
+      "id": "ca3742f2-f56c-4890-8250-8178098b2a34",
+      "name": "Get test questions",
+      "credentials": {
+        "postgres": {
+          "id": "3B977Yg30m61DNqP",
+          "name": "Postgres account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        448,
+        0
+      ],
+      "id": "9dc3b079-916e-4fe4-b16d-e95b22a82019",
+      "name": "One question at a time"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "0bAX1zf7GBwUT4MF",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/0bAX1zf7GBwUT4MF",
+          "cachedResultName": "WF2 · Search candidates"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        624,
+        144
+      ],
+      "id": "a60e57b0-2cfd-48e6-98d5-e895d43f78d3",
+      "name": "Ask the copilot",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        816,
+        144
+      ],
+      "id": "e49e090c-31e1-43e0-97e5-316081495cb1",
+      "name": "Pause 10 seconds"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Marks each of the copilot's answers right or wrong against the answer key\n// and adds up the score out of 10.\n//   Right = exactly the right people (nobody missing, nobody extra), each with their CV.\n//   \"Nobody matches\" questions are right only if the copilot names no one.\n//   A person counts only with one of THEIR CV files, so the two Ahmed Hassans can't be mixed up.\n\nconst questions = $('Get test questions').all().map((item) => item.json);\nconst answers = $input.all().map((item) => item.json);\n\nconst norm = (s) => String(s == null ? '' : s).trim().toLowerCase();\nconst names = (list) => list.map((p) => p.name).join(', ');\n\nconst results = questions.map((q, i) => {\n  // The answers come back in the same order as the questions; match on the question text to be safe.\n  const a = answers.find((x) => norm(x.question) === norm(q.question)) || answers[i] || {};\n  const expected = Array.isArray(q.expected) ? q.expected : [];\n  const got = (Array.isArray(a.candidates) ? a.candidates : []).map((c) => ({\n    name: c.name, cv_file_name: c.cv_file_name || null, score: c.score == null ? null : c.score,\n  }));\n\n  // Is this returned person one of the expected people (right name AND one of their CV files)?\n  const isExpected = (g, e) => norm(g.name) === norm(e.name)\n    && (e.cv_files || [e.cv_file_name]).some((f) => norm(f) === norm(g.cv_file_name));\n\n  let right = false;\n  let why;\n  if (a.error || !a.status || a.status === 'error') {\n    why = 'The copilot gave no answer: ' + (a.error || a.message || 'unknown error');\n  } else if (a.status === 'not_a_question') {\n    why = 'The copilot did not treat it as a candidate search.';\n  } else if (q.expect_no_match) {\n    right = got.length === 0;\n    why = right ? 'Correctly said nobody matches.' : `Should have found nobody, but named ${names(got)}.`;\n  } else {\n    const missing = expected.filter((e) => !got.some((g) => isExpected(g, e)));\n    const extra = got.filter((g) => !expected.some((e) => isExpected(g, e)));\n    right = missing.length === 0 && extra.length === 0;\n    const problems = [];\n    if (missing.length) problems.push(`missing ${names(missing)}`);\n    if (extra.length) problems.push(`should not include ${extra.map((g) => `${g.name} (${g.cv_file_name || 'no CV named'})`).join(', ')}`);\n    why = right ? 'Exactly the right people, each with their CV.' : problems.join('; ') + '.';\n  }\n\n  return {\n    n: q.n,\n    question: q.question,\n    right,\n    why,\n    expected: q.expect_no_match ? [] : expected.map((e) => ({ name: e.name, cv_file_name: e.cv_file_name })),\n    expect_no_match: q.expect_no_match,\n    bot_status: a.status || 'error',\n    bot_candidates: got,\n    bot_message: a.message || a.error || '',\n    search_id: a.search_id || null,\n  };\n});\n\nconst score = results.filter((r) => r.right).length;\nconst lines = [`🧪 *Copilot test run: ${score}/${results.length}*`];\nfor (const r of results) {\n  lines.push(r.right ? `✅ ${r.n}. ${r.question}` : `❌ ${r.n}. ${r.question}\\n      ↳ ${r.why}`);\n}\n\nreturn [{ json: { run: { score, total: results.length, results }, slack_text: lines.join('\\n') } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        624,
+        -96
+      ],
+      "id": "506cfa1e-77ce-44a4-9b05-83eb59563d96",
+      "name": "Mark the answers"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select save_test_run($1::jsonb) as run;",
+        "options": {
+          "queryReplacement": "={{ JSON.stringify($json.run) }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        848,
+        -96
+      ],
+      "id": "c65d90fe-cc6a-4c01-b00d-fabf8f0d3043",
+      "name": "Save test run",
+      "credentials": {
+        "postgres": {
+          "id": "3B977Yg30m61DNqP",
+          "name": "Postgres account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0CJQH2J059",
+          "mode": "list",
+          "cachedResultName": "ask-copilot"
+        },
+        "text": "={{ $('Mark the answers').first().json.slack_text }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        1072,
+        -96
+      ],
+      "id": "3c84e183-e5d0-4df0-bc35-ac158545ebc0",
+      "name": "Post the score",
+      "credentials": {
+        "slackApi": {
+          "id": "8X0FqbeUJhXS5zxy",
+          "name": "Slack account 10"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Run test": {
+      "main": [
+        [
+          {
+            "node": "Get test questions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get test questions": {
+      "main": [
+        [
+          {
+            "node": "One question at a time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "One question at a time": {
+      "main": [
+        [
+          {
+            "node": "Mark the answers",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ask the copilot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ask the copilot": {
+      "main": [
+        [
+          {
+            "node": "Pause 10 seconds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pause 10 seconds": {
+      "main": [
+        [
+          {
+            "node": "One question at a time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark the answers": {
+      "main": [
+        [
+          {
+            "node": "Save test run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save test run": {
+      "main": [
+        [
+          {
+            "node": "Post the score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": 900,
+    "availableInMCP": false
+  },
+  "versionId": "50a8e4ae-a8ef-437c-a00c-e0b8d1e6c19e",
+  "nodeGroups": [],
+  "id": "zgSt1qB9n2cv1rom",
+  "tags": []
+}

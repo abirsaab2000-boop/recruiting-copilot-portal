@@ -1,0 +1,50 @@
+FICTIONAL — TEST DATA for the Recruiting Copilot project. Not a real call, company or person.
+
+Call: Cedar Remote Talent × Lakeshore Smiles Dental Group (Dearborn, MI)
+Date: Mon 9 Nov 2026 · Length: 24 min · Auto-transcript (may contain errors)
+Speakers: Nadine (Cedar Remote Talent), Mike Patterson (Operations Director, Lakeshore Smiles)
+
+[00:00:03] Nadine: Hi Mike, can you hear me okay?
+[00:00:06] Mike Patterson: Yeah, yeah, I got you. Sorry, I'm in the car, um, between offices. Give me one sec.
+[00:00:14] Mike Patterson: Okay. Parked. We're good.
+[00:00:17] Nadine: No problem. Thanks for making time. So I read your form, but I'd love to hear it in your words. What's going on?
+[00:00:24] Mike Patterson: So, uh, we're a dental group, four offices. Dearborn, Livonia, Canton and— well, Troy now. Troy opened in August. And back in the spring we moved everything onto Go Hi Level, the, uh, the marketing CRM thing.
+[00:00:41] Nadine: GoHighLevel, sure.
+[00:00:42] Mike Patterson: Right. An agency set it up for us and then, honestly, they kind of disappeared. So now we've got workflows that half work. The missed call text-back isn't firing at Canton. Some patients get their reminder text twice, some get nothing. It's a mess.
+[00:01:02] Nadine: Okay. So you need someone to own the system.
+[00:01:05] Mike Patterson: Exactly. Own it. Fix what's broken, and then build the stuff we never got. Six-month recall campaigns for cleanings. Review requests after visits. A pipeline for new patient leads, we get those from Facebook, another agency runs the ads, that's not this job.
+[00:01:24] Nadine: Got it, so not ads. Just the GHL side.
+[00:01:27] Mike Patterson: Just the GHL side. And reporting. I want one dashboard where I can see all four offices. Booked, showed, no-showed.
+[00:01:38] Nadine: Makes sense. What level of experience are you looking for?
+[00:01:42] Mike Patterson: Real experience. I don't want someone who did a weekend course on YouTube. I'd say three years minimum actually building in GoHighLevel. Workflows, calendars, the phone stuff, Twilio or whatever it's called inside it now.
+[00:01:58] Nadine: LC Phone, yeah. Three years minimum, okay.
+[00:02:01] Mike Patterson: And this is going to sound random but— Arabic. A lot of our patients in Dearborn speak Arabic. If this person could write the Arabic versions of our texts, that's, that's huge for us. Not a must. But huge.
+[00:02:17] Nadine: Not random at all. I'll mark Arabic as a strong plus.
+[00:02:20] Mike Patterson: Strong plus. Yeah.
+[00:02:23] Nadine: What tools besides GHL?
+[00:02:26] Mike Patterson: Google Workspace. And Dentrix for the, uh, practice management. Which doesn't talk to GHL, which is part of the problem. If they know how to get data between the two, even with Zapier or something, bonus.
+[00:02:41] Nadine: Okay. And patient information — anything I should know there?
+[00:02:45] Mike Patterson: We're careful. They'd get access to what they need, nothing more. They'd sign our HIPAA paperwork. Our compliance person will want to talk to whoever we pick.
+[00:02:56] Nadine: Understood. Hours?
+[00:02:58] Mike Patterson: Full-time. Forty hours. I don't care where they are but they have to overlap with us. Let's say, um, ten to two Eastern at least. That's when the offices are busiest and things break.
+[00:03:12] Nadine: Ten to two Eastern, minimum overlap. And who would they report to?
+[00:03:16] Mike Patterson: Me. And they'd work a lot with the office managers. Denise at Dearborn is kind of the power user.
+[00:03:24] Nadine: Great. Budget?
+[00:03:26] Mike Patterson: We were thinking eighteen hundred a month. Maybe twenty-two for the right person. US dollars.
+[00:03:33] Nadine: Eighteen hundred to twenty-two hundred. That's realistic for this.
+[00:03:37] Mike Patterson: Good. Good.
+[00:03:40] Nadine: When would you want them to start?
+[00:03:42] Mike Patterson: Yesterday? [laughs] No, um. As soon as possible. Well, actually— we have an insurance audit in December, so it'd be crazy to onboard someone in the middle of that. Maybe after the holidays. I need to check with Dr. Kassem.
+[00:03:58] Nadine: So start date to be confirmed, probably early January?
+[00:04:01] Mike Patterson: Probably. Don't hold me to it.
+[00:04:04] Nadine: [inaudible] — how many people?
+[00:04:07] Mike Patterson: One. Maybe later we'd want someone for front desk calls but that's a different thing. Not now.
+[00:04:14] Nadine: And how do you want to interview?
+[00:04:16] Mike Patterson: Me and Denise. And I'd like a small test. Like, here's a sandbox, build a reminder workflow with a confirm and reschedule option. Paid, obviously, if it's more than an hour.
+[00:04:29] Nadine: That's a good idea. I'll put that in.
+[00:04:31] Mike Patterson: Oh and they need to be able to explain things simply. My office managers are not techy. If they talk in jargon it won't work.
+[00:04:40] Nadine: Clear communication, noted. Let me read it back. One full-time GoHighLevel specialist, three plus years, fixes and rebuilds your workflows, reminders, recall, reviews, new patient pipeline, a four-office dashboard. Arabic a strong plus. Overlap ten to two Eastern. Eighteen to twenty-two hundred a month. Start probably January.
+[00:05:02] Mike Patterson: Four offices, yeah, not three. You said four. Good. Yeah, that's it.
+[00:05:07] Nadine: Perfect. I'll send you a job description to approve before we share anything, and then a shortlist.
+[00:05:13] Mike Patterson: Sounds good. Talk soon.
+[00:05:15] Nadine: Bye Mike.

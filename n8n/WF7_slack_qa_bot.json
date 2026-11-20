@@ -1,0 +1,226 @@
+{
+  "name": "WF7 · Slack Q&A bot",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "c2562dfd-4d47-405a-b0ae-2067db42e08c",
+      "name": "Check every minute"
+    },
+    {
+      "parameters": {
+        "resource": "channel",
+        "operation": "history",
+        "channelId": {
+          "__rl": true,
+          "value": "C0CJQH2J059",
+          "mode": "id"
+        },
+        "limit": 20,
+        "filters": {
+          "oldest": "={{ $now.minus({ minutes: 10 }).toISO() }}"
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        224,
+        0
+      ],
+      "id": "873b6f51-2140-4008-bbd0-26f2d9b51394",
+      "name": "Read recent messages",
+      "credentials": {
+        "slackApi": {
+          "id": "8X0FqbeUJhXS5zxy",
+          "name": "Slack account 10"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Picks the questions in #ask-copilot that haven't been answered yet.\n\nconst CHANNEL = 'C0CJQH2J059';   // #ask-copilot (the channel ID)\n\n// The bot remembers which messages it already answered (only when the workflow is published).\nconst memory = $getWorkflowStaticData('global');\nmemory.answered = Array.isArray(memory.answered) ? memory.answered : [];\n\nconst messages = $input.all()\n  .map((item) => item.json)\n  .filter((m) => m && m.ts)\n  .sort((a, b) => Number(a.ts) - Number(b.ts));   // oldest first\n\nconst questions = [];\nfor (const m of messages) {\n  if (m.bot_id || m.subtype) continue;              // bots (including this one) and \"X joined\" notices\n  if (memory.answered.includes(m.ts)) continue;     // already answered\n  memory.answered.push(m.ts);\n\n  // \"<@U0123ABC> who has GHL?\" → \"who has GHL?\"\n  const question = String(m.text || '')\n    .replace(/<@[A-Z0-9]+(\\|[^>]*)?>/g, ' ')\n    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')\n    .replace(/\\s+/g, ' ')\n    .trim();\n  if (!question) continue;\n\n  questions.push({\n    json: {\n      question,              // what the recruiter asked\n      source: 'slack',\n      asked_by: m.user,      // Slack user ID of the recruiter\n      channel: CHANNEL,      // where to reply\n      thread_ts: m.ts,       // reply in the thread under their message\n    },\n  });\n}\nmemory.answered = memory.answered.slice(-200);\n\nreturn questions;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "id": "2c1e03da-2ae2-488b-bfd0-816abbedb633",
+      "name": "Pick new questions"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "={{ $json.channel }}",
+          "mode": "id"
+        },
+        "text": "=🔎 Searching the candidate database…",
+        "otherOptions": {
+          "includeLinkToWorkflow": false,
+          "thread_ts": {
+            "replyValues": {
+              "thread_ts": "={{ $json.thread_ts }}"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        608,
+        -128
+      ],
+      "id": "a76d306c-e7a0-45da-9c51-c8aa6365b210",
+      "name": "Say searching",
+      "credentials": {
+        "slackApi": {
+          "id": "8X0FqbeUJhXS5zxy",
+          "name": "Slack account 10"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "0bAX1zf7GBwUT4MF",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/0bAX1zf7GBwUT4MF",
+          "cachedResultName": "WF2 · Search candidates"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        640,
+        112
+      ],
+      "id": "6d22b418-5f41-40a3-ae08-51405046d229",
+      "name": "Search candidates1"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "={{ $('Pick new questions').item.json.channel }}",
+          "mode": "id"
+        },
+        "text": "={{ $json.message }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false,
+          "thread_ts": {
+            "replyValues": {
+              "thread_ts": "={{ $('Pick new questions').item.json.thread_ts }}"
+            }
+          },
+          "unfurl_links": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        848,
+        96
+      ],
+      "id": "ce252b87-b4f1-474c-851c-0872e0874bd8",
+      "name": "Post the answer",
+      "credentials": {
+        "slackApi": {
+          "id": "8X0FqbeUJhXS5zxy",
+          "name": "Slack account 10"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Check every minute": {
+      "main": [
+        [
+          {
+            "node": "Read recent messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read recent messages": {
+      "main": [
+        [
+          {
+            "node": "Pick new questions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pick new questions": {
+      "main": [
+        [
+          {
+            "node": "Say searching",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Search candidates1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search candidates1": {
+      "main": [
+        [
+          {
+            "node": "Post the answer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "b46d4ec3-1bc9-4a19-89fa-f5cae3ad2ccb",
+  "nodeGroups": [],
+  "id": "FApZOTk9Hrm5TKtJ",
+  "tags": []
+}

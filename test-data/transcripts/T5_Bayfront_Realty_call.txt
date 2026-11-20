@@ -1,0 +1,38 @@
+FICTIONAL — TEST DATA for the Recruiting Copilot project. Not a real call, company or person.
+
+Call: Cedar Remote Talent × Bayfront Realty Partners (Miami, FL)
+Date: Fri 13 Nov 2026 · Length: 17 min · Auto-transcript (may contain errors)
+Speakers: Nadine (Cedar Remote Talent), Carlos Medina (Broker / Owner, Bayfront Realty Partners)
+
+[00:00:02] Carlos Medina: Nadine! Hola. Can you hear me? I'm at a showing, there's some noise.
+[00:00:07] Nadine: I can hear you fine. Hi Carlos.
+[00:00:09] Carlos Medina: Okay great. So. I'll be quick. We're a brokerage, eighteen agents. And our lead gen is, honestly, word of mouth and Zillow. Zillow is killing us on cost.
+[00:00:21] Nadine: So you want to bring lead generation in house.
+[00:00:24] Carlos Medina: Exactly. Facebook and Instagram ads. Buyer leads, seller leads, "what's my home worth", that kind of campaign. We tried an agency, they didn't get real estate.
+[00:00:35] Nadine: What do you mean they didn't get it?
+[00:00:37] Carlos Medina: So with housing ads, Facebook has the special category. You can't target by age, zip code, all that. The agency didn't know, ads got rejected for two weeks. I need someone who has done Facebook ads for real estate before. Specifically real estate.
+[00:00:53] Nadine: Facebook Ads with real estate experience, must have.
+[00:00:56] Carlos Medina: Must. And creatives. They make the ads themselves in Canva. Listing photos, little videos, carousels.
+[00:01:04] Nadine: Canva, okay. Any video tools?
+[00:01:07] Carlos Medina: Canva is fine. If they can do a bit of TikTok too, bonus, my younger agents want TikTok. Not required.
+[00:01:14] Nadine: TikTok a bonus. And what happens to the leads?
+[00:01:17] Carlos Medina: They go into our CRM, we use Follow Up Boss. Right now somebody copies them by hand, which, you know. If the person can connect Facebook leads to Follow Up Boss, that's a big win.
+[00:01:29] Nadine: Lead integration with Follow Up Boss, plus. Ad spend?
+[00:01:33] Carlos Medina: About six thousand a month across everything. Could go up if it works.
+[00:01:37] Nadine: Six K a month in ad spend. Languages?
+[00:01:40] Carlos Medina: Spanish. This is Miami. [laughs] Half our ads should be in Spanish. Nice to have, but really nice.
+[00:01:47] Nadine: Spanish nice to have. Hours?
+[00:01:49] Carlos Medina: Eastern time. I'm flexible. I want a call every Monday to go through the numbers, cost per lead, appointments, and they have to be reachable during the day if an ad gets rejected.
+[00:02:00] Nadine: Weekly Monday review, reachable during Eastern hours. Full-time?
+[00:02:04] Carlos Medina: Hmm. Start part-time? Twenty hours. If it works, full-time. Is that weird?
+[00:02:09] Nadine: Not weird. Twenty hours to start, possible full-time. And budget for the person?
+[00:02:13] Carlos Medina: Send me options and we'll see. Depends on the person, right?
+[00:02:17] Nadine: It does. Any range at all? It helps me filter.
+[00:02:20] Carlos Medina: Ah— I'll get back to you. Let me talk to my partner. Sorry, my client is here.
+[00:02:24] Nadine: No problem. Start date?
+[00:02:26] Carlos Medina: January. After New Year.
+[00:02:28] Nadine: January. One person?
+[00:02:30] Carlos Medina: One person. Okay I have to go, the client is walking in.
+[00:02:33] Nadine: Last thing: I'll send you a job description to approve before we share anything.
+[00:02:37] Carlos Medina: Perfect. Gracias, Nadine!
+[00:02:39] Nadine: Good luck with the showing!

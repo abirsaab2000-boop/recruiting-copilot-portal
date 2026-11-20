@@ -1,0 +1,254 @@
+{
+  "name": "WF5a · Shortlist a role",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "role_id",
+              "type": "number"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "da38c084-3be9-4b7f-b7aa-12f04d3a10bb",
+      "name": "Start"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select r.id as role_id,\n       r.search_question\n         || coalesce(' Ideally also: '\n              || (select string_agg(n->>'text', '; ') from jsonb_array_elements(r.jd->'nice_to_have') n) || '.', '')\n         as question,\n       'shortlist' as source,\n       'role #' || r.id as asked_by\n  from roles r\n where r.id = $1 and r.status = 'approved';",
+        "options": {
+          "queryReplacement": "={{ $json.role_id }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        160,
+        0
+      ],
+      "id": "9a7b15ca-8ab2-4595-bccc-7da3772e3122",
+      "name": "Get role",
+      "credentials": {
+        "postgres": {
+          "id": "3B977Yg30m61DNqP",
+          "name": "Postgres account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "0bAX1zf7GBwUT4MF",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/0bAX1zf7GBwUT4MF",
+          "cachedResultName": "WF2 · Search candidates"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        384,
+        0
+      ],
+      "id": "8d24f0a2-3e4b-4c02-a0c2-46e9b476b22b",
+      "name": "Search candidates",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select save_shortlist($1::jsonb) as shortlist;",
+        "options": {
+          "queryReplacement": "={{ JSON.stringify({ role_id: $('Get role').first().json.role_id, answer: $json }) }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        608,
+        0
+      ],
+      "id": "0e6f8707-7acc-4398-96e9-3d54aedee72d",
+      "name": "Save shortlist",
+      "credentials": {
+        "postgres": {
+          "id": "3B977Yg30m61DNqP",
+          "name": "Postgres account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0CJQH2J059",
+          "mode": "list",
+          "cachedResultName": "ask-copilot"
+        },
+        "text": "={{ $json.shortlist.message }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        832,
+        0
+      ],
+      "id": "f3962278-7280-46c4-854c-6e3806c260fb",
+      "name": "Post the shortlist summary",
+      "credentials": {
+        "slackApi": {
+          "id": "8X0FqbeUJhXS5zxy",
+          "name": "Slack account 10"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return $('Save shortlist').first().json.shortlist.candidates.map((c) => ({ json: c }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1056,
+        0
+      ],
+      "id": "3a4b9e74-631b-429d-aa01-1d02a77f53c9",
+      "name": "One item per candidate"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "Mk7hnXCvca8uotYa",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/Mk7hnXCvca8uotYa",
+          "cachedResultName": "WF5b · Approve one candidate"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        1280,
+        0
+      ],
+      "id": "d3627c0c-5fbe-40f3-8299-9c458312517b",
+      "name": "Ask about each candidate"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Get role",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get role": {
+      "main": [
+        [
+          {
+            "node": "Search candidates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search candidates": {
+      "main": [
+        [
+          {
+            "node": "Save shortlist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save shortlist": {
+      "main": [
+        [
+          {
+            "node": "Post the shortlist summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post the shortlist summary": {
+      "main": [
+        [
+          {
+            "node": "One item per candidate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "One item per candidate": {
+      "main": [
+        [
+          {
+            "node": "Ask about each candidate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "894d134c-5c27-4623-a6d4-4c80e3551f03",
+  "nodeGroups": [],
+  "id": "edT9jyVH4Wv6kYbn",
+  "tags": []
+}

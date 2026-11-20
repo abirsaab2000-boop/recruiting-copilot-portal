@@ -1,0 +1,43 @@
+FICTIONAL — TEST DATA for the Recruiting Copilot project. Not a real call, company or person.
+
+Call: Cedar Remote Talent × SunHarbor Solar (Phoenix, AZ)
+Date: Wed 11 Nov 2026 · Length: 21 min · Auto-transcript (may contain errors)
+Speakers: Nadine (Cedar Remote Talent), Derek Alvarez (Sales Manager, SunHarbor Solar)
+
+[00:00:01] Derek Alvarez: Yo, Nadine, what's up.
+[00:00:03] Nadine: Hi Derek! Good, thanks. You sound busy.
+[00:00:06] Derek Alvarez: Always. It's the end of the quarter. Okay so I need setters. Like, yesterday.
+[00:00:11] Nadine: Appointment setters. Tell me how it works today.
+[00:00:14] Derek Alvarez: So we've got closers, six of them, they do the in-home and the virtual consults. Problem is they're spending half the day on the phone trying to book their own appointments. I want setters doing that so closers just close.
+[00:00:29] Nadine: Makes sense. Where do the leads come from?
+[00:00:32] Derek Alvarez: Two places. We buy homeowner lists, so that's cold. Straight cold calling. And then inbound, people who fill out the form on the site, those are warm, they need a call within like five minutes.
+[00:00:45] Nadine: So a mix of cold and inbound. How many calls a day?
+[00:00:48] Derek Alvarez: A hundred fifty dials. Well— maybe a hundred twenty, I don't want to burn people out. Say one twenty.
+[00:00:55] Nadine: One twenty dials. And what do they need to have done before?
+[00:00:59] Derek Alvarez: Cold calling. Real cold calling, at least a year. I need someone who doesn't fold the first time a guy says "not interested". Objection handling. And their English has to be really, really good. Like, clear. Americans hang up on accents they can't understand, that's just the truth.
+[00:01:16] Nadine: Clear English, at least a year of cold calling, strong objection handling. CRM?
+[00:01:21] Derek Alvarez: We use HubSpot. Every call gets logged, every appointment goes in HubSpot. If they know HubSpot, great. If they know another CRM, fine, they'll learn.
+[00:01:31] Nadine: HubSpot preferred. And language — anything besides English?
+[00:01:35] Derek Alvarez: Spanish. Big plus. Probably half our market here is Hispanic, a lot of older homeowners are more comfortable in Spanish. If I get one bilingual setter, that's gold.
+[00:01:46] Nadine: Spanish, big plus. Is there anything legal I should flag to candidates?
+[00:01:50] Derek Alvarez: Yeah, they need to understand do-not-call. We scrub the lists but they need to know if someone says "take me off", they're off. TCPA stuff. We'll train on our process, but they can't be careless.
+[00:02:03] Nadine: Good. What hours?
+[00:02:05] Derek Alvarez: Arizona time. We don't do daylight saving, so it's Mountain Standard all year. Nine to six. And, um, Saturday mornings sometimes. Not every week.
+[00:02:16] Nadine: Saturday mornings sometimes — I'll need to be specific with candidates. Is that paid extra or part of the forty?
+[00:02:22] Derek Alvarez: I— honestly I don't know yet. Put it as "occasional Saturdays".
+[00:02:27] Nadine: Okay. And pay?
+[00:02:29] Derek Alvarez: Twelve hundred base a month. Plus twenty-five bucks per appointment that actually shows. Not booked, shows. And maybe a bonus on closed deals, I need to check with Rick, he owns the comp plan.
+[00:02:43] Nadine: Twelve hundred base, plus twenty-five per showed appointment, closed-deal bonus to be confirmed.
+[00:02:48] Derek Alvarez: Yep.
+[00:02:50] Nadine: How many setters?
+[00:02:52] Derek Alvarez: Two. Could be three if they're really good. Let's say two.
+[00:02:56] Nadine: And start date?
+[00:02:58] Derek Alvarez: Monday after Thanksgiving. Thirtieth.
+[00:03:02] Nadine: That's tight but doable. Who do they report to?
+[00:03:05] Derek Alvarez: Me. Daily huddle at nine, on Zoom, cameras on.
+[00:03:10] Nadine: Cameras on, noted. Anything else?
+[00:03:13] Derek Alvarez: Energy. I want people who sound like they're smiling. And they need a quiet place and a good headset, no roosters in the background. [laughs] True story.
+[00:03:22] Nadine: [laughs] I'll add "quiet workspace and headset". So: two appointment setters, cold and inbound calls, a year of cold calling minimum, clear English, HubSpot preferred, Spanish a big plus, Arizona hours nine to six with occasional Saturdays, twelve hundred base plus twenty-five per show, start November thirtieth.
+[00:03:44] Derek Alvarez: That's it. Send it over.
+[00:03:46] Nadine: Will do, you'll get a job description to approve first.
+[00:03:49] Derek Alvarez: Cool. Later.

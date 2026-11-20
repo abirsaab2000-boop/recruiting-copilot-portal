@@ -1,0 +1,44 @@
+FICTIONAL — TEST DATA for the Recruiting Copilot project. Not a real call, company or person.
+
+Call: Cedar Remote Talent × Nestwell Home Goods (Seattle, WA)
+Date: Thu 12 Nov 2026 · Length: 26 min · Auto-transcript (may contain errors)
+Speakers: Nadine (Cedar Remote Talent), Priya Kapoor (Head of Customer Experience, Nestwell)
+
+[00:00:04] Nadine: Hi Priya, thanks for jumping on.
+[00:00:06] Priya Kapoor: Hi! Sorry, my dog is— Biscuit, no. Okay. Hi.
+[00:00:11] Nadine: [laughs] Hi Biscuit. So you're hiring for support?
+[00:00:15] Priya Kapoor: Yes. So Nestwell is a Shopify store, we sell home goods. Linen, ceramics, candles, that kind of thing. We're about two thousand tickets a month, and in November, December it's like double.
+[00:00:28] Nadine: And who handles them now?
+[00:00:30] Priya Kapoor: Me and one other agent, Sam. And we're drowning. So I need one more agent. Full-time.
+[00:00:37] Nadine: What would they do day to day?
+[00:00:39] Priya Kapoor: Email and chat tickets in Zendesk. Where is my order, returns, damaged items — ceramics break, you know. Order edits and refunds in Shopify. And they'd update our help center articles when something changes.
+[00:00:54] Nadine: Zendesk and Shopify. Is Zendesk a must?
+[00:00:57] Priya Kapoor: Zendesk, yes. I don't have time to train someone on the basics. At least two years in Zendesk. Macros, views, tags, all of it.
+[00:01:06] Nadine: Two years of Zendesk. And Shopify?
+[00:01:09] Priya Kapoor: Shopify they can learn, it's easy. But if they've done refunds and order edits in Shopify before, that's great.
+[00:01:16] Nadine: Okay. Any other tools?
+[00:01:18] Priya Kapoor: We're thinking about switching to Gorgias next year. So Gorgias would be a fun bonus but not important.
+[00:01:25] Nadine: Languages?
+[00:01:27] Priya Kapoor: English obviously, and their writing has to be really good. Warm. We don't do scripts, we want it to sound like a person. And— French would be nice. We ship to Canada and some of our customers in Quebec write in French. Maybe ten percent of tickets.
+[00:01:43] Nadine: French nice to have. Hours?
+[00:01:45] Priya Kapoor: Pacific time. Mostly eight to five Pacific. And— this is the thing I haven't figured out. We need weekend coverage. Or at least Saturday. Right now nobody answers on weekends and Monday is a nightmare.
+[00:01:58] Nadine: Is the weekend part of this same role, or a separate part-time person?
+[00:02:02] Priya Kapoor: I don't know yet. Honestly. Let me talk to Jordan, my boss. It might be this person doing Tuesday to Saturday, or it might be a second part-time person. Can we leave it open?
+[00:02:13] Nadine: Sure, I'll flag it as open in the job description so you can decide before it goes out.
+[00:02:17] Priya Kapoor: Perfect.
+[00:02:19] Nadine: What does success look like after three months?
+[00:02:22] Priya Kapoor: First response under four hours. CSAT over ninety percent. And I'd love them to suggest improvements, like "hey, we get this question fifty times a week, let's add it to the FAQ".
+[00:02:34] Nadine: Great. Budget?
+[00:02:36] Priya Kapoor: Around fifteen hundred a month. Maybe a bit more if they speak French.
+[00:02:41] Nadine: Fifteen hundred, flexible for French. And start date?
+[00:02:44] Priya Kapoor: I'd say before Black Friday but that's in two weeks, that's not realistic, right?
+[00:02:49] Nadine: It would be very tight.
+[00:02:51] Priya Kapoor: Then early December. For the holiday rush. As early as possible in December.
+[00:02:56] Nadine: Early December. How many people?
+[00:02:58] Priya Kapoor: One. Unless the weekend thing becomes a second person.
+[00:03:02] Nadine: Got it. Interview process?
+[00:03:04] Priya Kapoor: A writing test. I'll give them three real tickets, anonymized, and they write replies. Then a call with me.
+[00:03:12] Nadine: Nice. Let me read it back. One full-time support agent, Zendesk two plus years, Shopify order edits and refunds a plus, Gorgias bonus, excellent written English, French nice to have. Pacific hours, weekend coverage to be decided. About fifteen hundred a month, more for French. Start early December.
+[00:03:31] Priya Kapoor: Yes. That's exactly it. Biscuit, NO.
+[00:03:34] Nadine: [laughs] I'll send you the job description to approve.
+[00:03:37] Priya Kapoor: Thank you! Bye!

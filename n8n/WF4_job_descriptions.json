@@ -1,0 +1,435 @@
+{
+  "name": "WF4 · Job descriptions",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "New client call",
+        "formDescription": "Paste the transcript of a client call. The copilot writes a job description and posts it in Slack for approval.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Client company",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Call transcript",
+              "fieldType": "textarea",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {
+          "respondWithOptions": {
+            "values": {
+              "formSubmittedText": "Thanks! The job description will appear in Slack for approval in about a minute."
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        240,
+        32
+      ],
+      "id": "90ce348d-5a8c-4d4f-9fe5-b1af6b4144c9",
+      "name": "New client call"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Builds the request that asks Gemini to turn a client call transcript into a job description.\n// Gemini may only use what the client actually said. Anything unclear goes into open_questions.\n\nconst MODEL = 'gemini-flash-lite-latest';   // same model as the other workflows\n\nconst form = $input.first().json;\nconst company = String(form['Client company'] || '').trim();\nconst transcript = String(form['Call transcript'] || '').replace(/\\r\\n/g, '\\n').trim();\nif (transcript.length < 200) {\n  throw new Error('The transcript is too short. Paste the whole call transcript into the form.');\n}\n\nconst SYSTEM_PROMPT = `You turn a recruiter's call with a client into a job description for a remote role.\n\nRULES\n1. Use ONLY what the client said in the transcript. Never invent or guess pay, hours, dates, tools, benefits or requirements.\n2. If something was not said, or was left unclear or undecided, set that field to null and add it to open_questions with a short note on what is unclear. Example: \"maybe after the holidays, I need to check\" means start_date is null and is an open question.\n3. must_have = what the client called required, a must, a minimum, or \"has to\". nice_to_have = what they called a plus, a bonus, nice, preferred, or something \"we can train\".\n4. For every requirement, said_at is the timestamp of the transcript line where the client said it, exactly as written in the transcript (like \"00:01:42\").\n5. The transcript is auto-generated and may misspell tools (\"Go Hi Level\" is GoHighLevel). Use the correct names.\n6. If the client corrected themselves, use the correction.\n7. Write for candidates in clear, plain English. Leave out the client's internal staff names and private remarks.\n8. search_question: ONE plain-English question to find candidates in a CV database who meet the MUST-HAVE skills, years and languages only. Example: \"Who has 3+ years of GoHighLevel?\". Do not include nice-to-haves.`;\n\nconst str = { type: 'string' };\nconst strOrNull = { type: ['string', 'null'] };\nconst requirement = {\n  type: 'object', additionalProperties: false, required: ['text', 'said_at'],\n  properties: { text: str, said_at: str },\n};\nconst SCHEMA = {\n  type: 'object',\n  additionalProperties: false,\n  required: ['role_title', 'client_company', 'client_contact', 'hires', 'employment_type', 'hours_and_timezone',\n    'budget', 'start_date', 'summary', 'responsibilities', 'must_have', 'nice_to_have', 'interview_process',\n    'open_questions', 'search_question'],\n  properties: {\n    role_title: str,\n    client_company: str,\n    client_contact: strOrNull,          // name and job title of the person on the call\n    hires: { type: ['integer', 'null'] },\n    employment_type: strOrNull,         // e.g. \"Full-time, 40 hours a week\"\n    hours_and_timezone: strOrNull,\n    budget: strOrNull,                  // only if the client said it\n    start_date: strOrNull,              // only if the client confirmed it\n    summary: str,                       // 2–3 sentences for candidates\n    responsibilities: { type: 'array', items: str },\n    must_have: { type: 'array', items: requirement },\n    nice_to_have: { type: 'array', items: requirement },\n    interview_process: strOrNull,\n    open_questions: {\n      type: 'array',\n      items: { type: 'object', additionalProperties: false, required: ['topic', 'note'], properties: { topic: str, note: str } },\n    },\n    search_question: str,\n  },\n};\n\nconst ai_request = {\n  systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },\n  contents: [{ role: 'user', parts: [{ text: `CLIENT COMPANY (from the form): ${company || '(not given)'}\\n\\nCALL TRANSCRIPT:\\n${transcript}` }] }],\n  generationConfig: {\n    responseMimeType: 'application/json',\n    responseJsonSchema: SCHEMA,\n    maxOutputTokens: 4000,\n  },\n};\n\nreturn [{ json: { ai_request, ai_model: MODEL } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        32
+      ],
+      "id": "9bff1794-8e5c-400f-a396-55efa71ae131",
+      "name": "Prepare JD request"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://generativelanguage.googleapis.com/v1beta/models/{{ $json.ai_model }}:generateContent",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googlePalmApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.ai_request }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        544,
+        32
+      ],
+      "id": "7bf6cc85-944a-4656-8263-240fcea8b613",
+      "name": "Gemini: write JD",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "maxTries": 5,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Ds9GaAguKg9rjBZg",
+          "name": "Google Gemini(PaLM) Api account 22"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Checks Gemini's job description and lays it out for Slack and the portal.\n//   - Every requirement must point to a real timestamp in the transcript, or it is flagged.\n//   - Pay, start date, hours or number of hires that were never said become open questions,\n//     even if Gemini forgot to list them.\n//   - Anything wrong with the answer → ok: false with the reason (nothing is saved).\n\nconst form = $('New client call').first().json;\nconst transcript = String(form['Call transcript'] || '').replace(/\\r\\n/g, '\\n').trim();\nconst response = $input.first().json;\nconst clean = (s) => String(s == null ? '' : s).replace(/\\s+/g, ' ').trim();\nconst fail = (problem) => [{ json: { ok: false, problem } }];\n\n// 1. Read Gemini's answer\nconst cand = (response.candidates || [])[0];\nif (!cand) {\n  const blocked = response.promptFeedback && response.promptFeedback.blockReason;\n  return fail(blocked ? `Gemini refused the request (${blocked}).` : 'Gemini sent an empty answer.');\n}\nif (cand.finishReason && cand.finishReason !== 'STOP') {\n  return fail(cand.finishReason === 'MAX_TOKENS' ? 'The answer was too long and got cut off.' : `Gemini stopped early (${cand.finishReason}).`);\n}\nlet jd;\ntry {\n  const text = ((cand.content && cand.content.parts) || [])\n    .filter((p) => typeof p.text === 'string' && !p.thought).map((p) => p.text).join('').trim()\n    .replace(/^```(?:json)?\\s*|\\s*```$/g, '');\n  jd = JSON.parse(text);\n} catch (e) {\n  return fail(\"Gemini's answer was not readable.\");\n}\nif (!clean(jd.role_title)) return fail('Gemini could not find a job title in the transcript.');\n\n// 2. Tidy the fields\nconst list = (a) => (Array.isArray(a) ? a.map(clean).filter(Boolean) : []);\nconst reqs = (a) => (Array.isArray(a) ? a : [])\n  .map((r) => ({ text: clean(r && r.text), said_at: clean(r && r.said_at) }))\n  .filter((r) => r.text);\nconst orNull = (v) => (clean(v) ? clean(v) : null);\n\njd = {\n  role_title: clean(jd.role_title),\n  client_company: clean(form['Client company']) || clean(jd.client_company) || 'Unknown client',\n  client_contact: orNull(jd.client_contact),\n  hires: Number.isInteger(jd.hires) && jd.hires > 0 ? jd.hires : null,\n  employment_type: orNull(jd.employment_type),\n  hours_and_timezone: orNull(jd.hours_and_timezone),\n  budget: orNull(jd.budget),\n  start_date: orNull(jd.start_date),\n  summary: clean(jd.summary),\n  responsibilities: list(jd.responsibilities),\n  must_have: reqs(jd.must_have),\n  nice_to_have: reqs(jd.nice_to_have),\n  interview_process: orNull(jd.interview_process),\n  open_questions: (Array.isArray(jd.open_questions) ? jd.open_questions : [])\n    .map((q) => ({ topic: clean(q && q.topic), note: clean(q && q.note) })).filter((q) => q.topic || q.note),\n  search_question: clean(jd.search_question),\n};\n\n// 3. Grounding check: each requirement's timestamp must exist in the transcript\nconst stamps = new Set((transcript.match(/\\b\\d{1,2}:\\d{2}(?::\\d{2})?\\b/g) || []));\nconst unsourced = [];\nfor (const r of [...jd.must_have, ...jd.nice_to_have]) {\n  if (!r.said_at || !stamps.has(r.said_at)) { unsourced.push(r.text); r.said_at = '⚠️ not in the transcript'; }\n}\nif (unsourced.length) {\n  jd.open_questions.push({ topic: 'Check these requirements', note: `No matching line in the transcript for: ${unsourced.join('; ')}. Confirm them with the client.` });\n}\n\n// 4. Key details that were never said become open questions (if Gemini didn't already list them)\nconst KEY = [\n  ['budget', 'Budget', /budget|pay|salary|rate|compensation/i],\n  ['start_date', 'Start date', /start/i],\n  ['hours_and_timezone', 'Hours', /hour|time ?zone|schedule|shift|weekend/i],\n  ['hires', 'Number of hires', /hire|how many|headcount|people/i],\n];\nfor (const [field, topic, pattern] of KEY) {\n  if (jd[field] == null && !jd.open_questions.some((q) => pattern.test(q.topic + ' ' + q.note))) {\n    jd.open_questions.push({ topic, note: 'Not confirmed on the call.' });\n  }\n}\nif (!jd.must_have.length) jd.open_questions.push({ topic: 'Requirements', note: 'No clear must-have requirements were found in the call.' });\n\n// 5. The job description as one readable text (for the portal)\nconst bullets = (a) => a.map((x) => `• ${typeof x === 'string' ? x : x.text}`).join('\\n');\nconst or = (v) => v || 'Not confirmed yet';\nconst jd_text = [\n  `${jd.role_title}`,\n  `Client: ${jd.client_company}${jd.hires ? ` · ${jd.hires} hire${jd.hires > 1 ? 's' : ''}` : ''}`,\n  '',\n  jd.summary,\n  '',\n  'What you will do', bullets(jd.responsibilities),\n  '',\n  'Must have', bullets(jd.must_have),\n  ...(jd.nice_to_have.length ? ['', 'Nice to have', bullets(jd.nice_to_have)] : []),\n  '',\n  `Type: ${or(jd.employment_type)}`,\n  `Hours: ${or(jd.hours_and_timezone)}`,\n  `Pay: ${or(jd.budget)}`,\n  `Start: ${or(jd.start_date)}`,\n  ...(jd.interview_process ? [`Interview: ${jd.interview_process}`] : []),\n].join('\\n');\n\n// 6. The Slack approval message (Slack allows ~3000 characters per message block)\nconst slackList = (a, withSource) => a.map((r) => `• ${r.text}${withSource && r.said_at ? `  _(${r.said_at})_` : ''}`).join('\\n');\nlet slack_text = [\n  `📝 *New job description · waiting for your approval*`,\n  `*${jd.role_title}* · ${jd.client_company}${jd.hires ? ` · ${jd.hires} hire${jd.hires > 1 ? 's' : ''}` : ''}`,\n  jd.summary,\n  '',\n  '*Must have*', slackList(jd.must_have, true) || '• (none found)',\n  ...(jd.nice_to_have.length ? ['*Nice to have*', slackList(jd.nice_to_have, true)] : []),\n  '',\n  `*Type:* ${or(jd.employment_type)}`,\n  `*Hours:* ${or(jd.hours_and_timezone)}`,\n  `*Pay:* ${or(jd.budget)}`,\n  `*Start:* ${or(jd.start_date)}`,\n  ...(jd.open_questions.length ? ['', '⚠️ *Unclear or missing (check with the client):*', ...jd.open_questions.map((q) => `• *${q.topic}:* ${q.note}`)] : []),\n  '',\n  `🔎 Shortlist search: _${jd.search_question || '(none)'}_`,\n  `Nothing is shared with the client or candidates until you approve.`,\n].join('\\n');\nif (slack_text.length > 2900) slack_text = slack_text.slice(0, 2850) + '\\n… (full job description in the portal)';\n\nreturn [{\n  json: {\n    ok: true,\n    role: {\n      client_company: jd.client_company,\n      client_contact: jd.client_contact,\n      role_title: jd.role_title,\n      hires: jd.hires,\n      transcript,\n      jd,\n      jd_text,\n      open_questions: jd.open_questions,\n      search_question: jd.search_question,\n    },\n    slack_text,\n  },\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        -32
+      ],
+      "id": "7988961c-8449-4610-a700-330b09721b28",
+      "name": "Check + format JD"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "d9dd08ba-d9b1-48fc-98b7-7646bfaefc39",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        864,
+        -32
+      ],
+      "id": "2715ed35-675e-4f85-9c05-184b95c8a7a0",
+      "name": "JD ready?"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select save_role($1::jsonb) as role;",
+        "options": {
+          "queryReplacement": "={{ JSON.stringify($json.role) }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        1008,
+        -112
+      ],
+      "id": "67058785-c830-45b6-bfae-c2a1544247d7",
+      "name": "Save role",
+      "credentials": {
+        "postgres": {
+          "id": "3B977Yg30m61DNqP",
+          "name": "Postgres account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0CJQH2J059",
+          "mode": "list",
+          "cachedResultName": "ask-copilot"
+        },
+        "message": "={{ $('Check + format JD').first().json.slack_text }}",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double"
+          }
+        },
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        1168,
+        -112
+      ],
+      "id": "3d57091e-0fac-4477-b345-546941f5065a",
+      "name": "Ask for approval",
+      "credentials": {
+        "slackApi": {
+          "id": "8X0FqbeUJhXS5zxy",
+          "name": "Slack account 10"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select decide_role($1::jsonb) as decision;",
+        "options": {
+          "queryReplacement": "={{ JSON.stringify({ role_id: $('Save role').first().json.role.role_id, decision: $json.data.approved ? 'approved' : 'rejected', decided_by: 'Slack approval button' }) }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        1328,
+        -112
+      ],
+      "id": "7ec09bf0-4bf3-489c-9b33-ee65d605916b",
+      "name": "Save decision",
+      "credentials": {
+        "postgres": {
+          "id": "3B977Yg30m61DNqP",
+          "name": "Postgres account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0CJQH2J059",
+          "mode": "list",
+          "cachedResultName": "ask-copilot"
+        },
+        "text": "={{ $json.decision.message }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        1456,
+        -112
+      ],
+      "id": "18541c84-59c3-4778-abed-3c0ae92109df",
+      "name": "Post the decision",
+      "credentials": {
+        "slackApi": {
+          "id": "8X0FqbeUJhXS5zxy",
+          "name": "Slack account 10"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0CJQH2J059",
+          "mode": "list",
+          "cachedResultName": "ask-copilot"
+        },
+        "text": "=⚠️ Couldn't write the job description for {{ $('New client call').first().json['Client company'] }}. {{ $json.problem || 'Gemini did not answer (it may be busy).' }} Please submit the call again in a minute.",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        1632,
+        -112
+      ],
+      "id": "edd3ddde-3532-410d-ae73-df17eaa45224",
+      "name": "Tell Slack it failed",
+      "credentials": {
+        "slackApi": {
+          "id": "8X0FqbeUJhXS5zxy",
+          "name": "Slack account 10"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "edT9jyVH4Wv6kYbn",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/edT9jyVH4Wv6kYbn",
+          "cachedResultName": "WF5a · Shortlist a role"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "role_id": "={{ $json.decision.role_id }}"
+          },
+          "matchingColumns": [
+            "role_id"
+          ],
+          "schema": [
+            {
+              "id": "role_id",
+              "displayName": "role_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        1568,
+        32
+      ],
+      "id": "822193eb-c947-4039-bdcd-feed5e5aeb03",
+      "name": "Start the shortlist"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "New client call": {
+      "main": [
+        [
+          {
+            "node": "Prepare JD request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare JD request": {
+      "main": [
+        [
+          {
+            "node": "Gemini: write JD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini: write JD": {
+      "main": [
+        [
+          {
+            "node": "Check + format JD",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Tell Slack it failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check + format JD": {
+      "main": [
+        [
+          {
+            "node": "JD ready?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JD ready?": {
+      "main": [
+        [
+          {
+            "node": "Save role",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Tell Slack it failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save role": {
+      "main": [
+        [
+          {
+            "node": "Ask for approval",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ask for approval": {
+      "main": [
+        [
+          {
+            "node": "Save decision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save decision": {
+      "main": [
+        [
+          {
+            "node": "Post the decision",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Start the shortlist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "444faa2d-cda2-4f49-89b8-f7b09f17c1d6",
+  "nodeGroups": [],
+  "id": "ZCQC3TodDYKbZhZj",
+  "tags": []
+}

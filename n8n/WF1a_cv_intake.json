@@ -1,0 +1,236 @@
+{
+  "name": "WF1a · CV intake",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        -48
+      ],
+      "id": "63576f16-65c3-43c1-b6f4-495c9357a985",
+      "name": "Run on whole folder"
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "searchMethod": "query",
+        "queryString": "=trashed = false",
+        "returnAll": true,
+        "filter": {
+          "folderId": {
+            "__rl": true,
+            "value": "https://drive.google.com/drive/folders/YOUR_CV_FOLDER_ID",
+            "mode": "url"
+          },
+          "whatToSearch": "files"
+        },
+        "options": {
+          "fields": [
+            "*"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -128,
+        -48
+      ],
+      "id": "aaf05a4e-af5f-4adb-8c99-4513b73d7cdf",
+      "name": "List files in CV folder"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Turns Google Drive's file details into one clean item per file.\n\nconst files = [];\n\n$input.all().forEach((item, index) => {\n  const f = item.json;\n  if (!f || !f.id) return;                                          // not a file\n  if (f.mimeType === 'application/vnd.google-apps.folder') return; // skip folders\n\n  files.push({\n    json: {\n      drive_file_id: f.id,\n      file_name: f.name || '(no name)',\n      mime_type: f.mimeType || '',\n      file_url: f.webViewLink || `https://drive.google.com/file/d/${f.id}/view`,\n      // The file's fingerprint: identical files have the same content_key\n      content_key: f.md5Checksum ? `md5:${f.md5Checksum}` : `drive:${f.id}:v${f.version || 0}`,\n      size_bytes: f.size ? Number(f.size) : null,\n      created_time: f.createdTime || null,\n    },\n    pairedItem: { item: index }, // remembers which Drive file this item came from\n  });\n});\n\n// Oldest upload first, so an older CV is read before its newer version\nfiles.sort((a, b) => String(a.json.created_time || '').localeCompare(String(b.json.created_time || '')));\n\nreturn files;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        80,
+        -48
+      ],
+      "id": "a429d969-a1be-4d2b-a46f-4d42a0a14467",
+      "name": "Standardize file info"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "7KJztoUWxYuIGxYe",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/7KJztoUWxYuIGxYe",
+          "cachedResultName": "WF1b · Process one CV"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        304,
+        -48
+      ],
+      "id": "c3431db3-c6c5-4a7a-918d-4ad6af0d2d6c",
+      "name": "Process one CV",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Turns the results for every file into one Slack message.\n// Anything a human should look at goes in a \"Needs a human\" list with a link to the file.\n\nconst esc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nconst linkTo = (r) => (r.file_url ? `<${r.file_url}|${esc(r.file_name).replace(/\\|/g, '/')}>` : `\\`${esc(r.file_name)}\\``);\n\nconst results = $input.all().map((item, i) => {\n  const r = item.json || {};\n  if (r.outcome) return r;\n  // The sub-workflow crashed for this file (for example the database was unreachable).\n  let file = {};\n  try { file = $('Standardize file info').itemMatching(i).json; } catch (e) { /* unknown file */ }\n  return {\n    outcome: 'error',\n    file_name: file.file_name || 'unknown file',\n    file_url: file.file_url,\n    message: `Processing crashed: ${r.error || 'no result'}. It will be retried on the next run.`,\n  };\n});\n\nconst by = (outcome) => results.filter((r) => r.outcome === outcome);\nconst flagsOf = (r) => (Array.isArray(r.flags) ? r.flags : []);\n\nconst ATTENTION_LABEL = {\n  unreadable: 'Unreadable',\n  unsupported: 'Not supported',\n  not_a_cv: 'Not a CV',\n  error: 'Error',\n  possible_duplicate: 'Same name as someone else',\n};\n\nconst attention = [];\nfor (const r of results) {\n  if (ATTENTION_LABEL[r.outcome]) {\n    attention.push(`• ${linkTo(r)} — *${ATTENTION_LABEL[r.outcome]}:* ${esc(r.message)}`);\n  } else if (flagsOf(r).includes('read_from_scan')) {\n    attention.push(`• ${linkTo(r)} — *Read from a scan, please double-check:* ${esc(r.message)}`);\n  } else if (flagsOf(r).includes('check_which_is_newer')) {\n    attention.push(`• ${linkTo(r)} — *Check the version:* ${esc(r.message)}`);\n  }\n}\n\nconst names = (list) => {\n  const seen = new Map();   // one name per person (two people can share a name)\n  for (const r of list) seen.set(r.candidate_id || r.file_name, esc(r.candidate_name || r.file_name));\n  const unique = [...seen.values()];\n  return unique.slice(0, 8).join(', ') + (unique.length > 8 ? ` and ${unique.length - 8} more` : '');\n};\n\nconst lines = [`*CV intake* · ${results.length} file${results.length === 1 ? '' : 's'} checked`];\nconst add = (emoji, label, list, showNames = true) => {\n  if (list.length) lines.push(`${emoji} ${label}: *${list.length}*${showNames ? ' — ' + names(list) : ''}`);\n};\nadd('✅', 'New candidates', by('new_candidate').concat(by('possible_duplicate')));\nadd('🔁', 'Updated CVs (old version replaced)', by('updated'));\nadd('🗂️', 'Older versions stored', by('older_version'));\nadd('👯', 'Duplicates merged', by('duplicate').concat(by('exact_duplicate')));\nadd('⏭️', 'Already in the database', by('already_processed'), false);\n\nif (attention.length) {\n  lines.push('', `⚠️ *Needs a human (${attention.length})*`);\n  lines.push(...attention.slice(0, 25));\n  if (attention.length > 25) lines.push(`…and ${attention.length - 25} more. See the CV library in the portal.`);\n} else {\n  lines.push('', 'Nothing needs your attention. 👍');\n}\n\nconst counts = {};\nfor (const r of results) counts[r.outcome] = (counts[r.outcome] || 0) + 1;\n\nreturn [{ json: { slack_text: lines.join('\\n'), counts, needs_attention: attention.length } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        528,
+        -48
+      ],
+      "id": "b2580d95-d7f2-40d8-827a-d6d418dd7beb",
+      "name": "Build summary"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0CJH4FTD8D",
+          "mode": "id"
+        },
+        "text": "={{ $json.slack_text }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        752,
+        -48
+      ],
+      "id": "f8760f93-f0d9-41c2-9f39-1c464c22c8b7",
+      "name": "Post summary to Slack",
+      "credentials": {
+        "slackApi": {
+          "id": "ZwwNhlOV5oqLVUxY",
+          "name": "Slack account 9"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "https://drive.google.com/drive/folders/YOUR_CV_FOLDER_ID",
+          "mode": "url"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        -208
+      ],
+      "id": "736b305d-4168-453e-b3b2-227a0455a723",
+      "name": "New file in CV folder"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Run on whole folder": {
+      "main": [
+        [
+          {
+            "node": "List files in CV folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List files in CV folder": {
+      "main": [
+        [
+          {
+            "node": "Standardize file info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Standardize file info": {
+      "main": [
+        [
+          {
+            "node": "Process one CV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process one CV": {
+      "main": [
+        [
+          {
+            "node": "Build summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build summary": {
+      "main": [
+        [
+          {
+            "node": "Post summary to Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "New file in CV folder": {
+      "main": [
+        [
+          {
+            "node": "Standardize file info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "39420fb8-5086-43d7-b018-21a15e89c8a3",
+  "nodeGroups": [],
+  "id": "cTJVEDClJsHxfDUu",
+  "tags": []
+}

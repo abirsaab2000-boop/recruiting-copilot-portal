@@ -1,0 +1,234 @@
+{
+  "name": "WF5b · Approve one candidate",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "3cc67a8f-5778-45a0-bdfa-f79f7a64514d",
+      "name": "Start"
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0CJQH2J059",
+          "mode": "list",
+          "cachedResultName": "ask-copilot"
+        },
+        "message": "={{ $json.slack_text }}",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        176,
+        0
+      ],
+      "id": "371e5b70-adad-494f-a7a8-1a740387ea41",
+      "name": "Ask about the candidate",
+      "credentials": {
+        "slackApi": {
+          "id": "8X0FqbeUJhXS5zxy",
+          "name": "Slack account 10"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select decide_candidate($1::jsonb) as decision;",
+        "options": {
+          "queryReplacement": "={{ JSON.stringify({ shortlist_id: $('Start').first().json.shortlist_id, decision: $json.data.approved ? 'approved' : 'declined', decided_by: 'Slack approval button' }) }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        336,
+        0
+      ],
+      "id": "b50ce22b-5559-42e6-b077-1c4d6b930ea7",
+      "name": "Save decision",
+      "credentials": {
+        "postgres": {
+          "id": "3B977Yg30m61DNqP",
+          "name": "Postgres account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "ec2b4d52-313c-4428-8bf6-a9915d800af4",
+              "leftValue": "={{ $json.decision.status === 'approved' && $json.decision.changed }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        496,
+        0
+      ],
+      "id": "38a3c635-2e2f-472f-9eb2-295b2ad997d2",
+      "name": "Approved?"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select mark_sent_to_ghl($1::jsonb) as ghl;",
+        "options": {
+          "queryReplacement": "={{ JSON.stringify({ shortlist_id: $json.decision.shortlist_id, mode: 'test' }) }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        704,
+        -96
+      ],
+      "id": "00d62225-598b-4736-bb25-13d16a649690",
+      "name": "Send to GoHighLevel (TEST)",
+      "credentials": {
+        "postgres": {
+          "id": "3B977Yg30m61DNqP",
+          "name": "Postgres account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0CJQH2J059",
+          "mode": "list",
+          "cachedResultName": "ask-copilot"
+        },
+        "text": "={{ $('Save decision').first().json.decision.message }}{{ $json.ghl ? '\\n' + $json.ghl.message : '' }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        896,
+        16
+      ],
+      "id": "0429b19c-b4ba-4e6f-8ac1-98e954c276bd",
+      "name": "Post the result",
+      "credentials": {
+        "slackApi": {
+          "id": "8X0FqbeUJhXS5zxy",
+          "name": "Slack account 10"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Ask about the candidate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ask about the candidate": {
+      "main": [
+        [
+          {
+            "node": "Save decision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save decision": {
+      "main": [
+        [
+          {
+            "node": "Approved?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approved?": {
+      "main": [
+        [
+          {
+            "node": "Send to GoHighLevel (TEST)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Post the result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send to GoHighLevel (TEST)": {
+      "main": [
+        [
+          {
+            "node": "Post the result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "fcd5409e-c427-454e-b618-18b400fd2cfd",
+  "nodeGroups": [],
+  "id": "Mk7hnXCvca8uotYa",
+  "tags": []
+}

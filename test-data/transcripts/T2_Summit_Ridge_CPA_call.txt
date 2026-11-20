@@ -1,0 +1,44 @@
+FICTIONAL — TEST DATA for the Recruiting Copilot project. Not a real call, company or person.
+
+Call: Cedar Remote Talent × Summit Ridge CPA (Denver, CO)
+Date: Tue 10 Nov 2026 · Length: 19 min · Auto-transcript (may contain errors)
+Speakers: Nadine (Cedar Remote Talent), Jennifer Walsh (Managing Partner, Summit Ridge CPA)
+
+[00:00:02] Jennifer Walsh: —sorry, I had you on mute. Hi!
+[00:00:05] Nadine: Hi Jennifer! No worries. How's Denver?
+[00:00:08] Jennifer Walsh: Cold. First real snow last night. Okay, I only have about twenty minutes, so let's dive in.
+[00:00:14] Nadine: Of course. Tell me about the role.
+[00:00:17] Jennifer Walsh: So we're a small CPA firm. Six people. We do tax, obviously, but about a third of our revenue is monthly bookkeeping for small businesses. Around twenty-five clients. Restaurants, a couple of dental offices, contractors.
+[00:00:33] Nadine: And you need a bookkeeper for those.
+[00:00:35] Jennifer Walsh: We need a bookkeeper who can own the monthly close for most of them. Bank recs, credit card recs, categorizing, fixing the mess the clients make. Then month-end reports that one of our CPAs reviews.
+[00:00:50] Nadine: Which software?
+[00:00:52] Jennifer Walsh: QuickBooks Online is the big one. That's a must. I'd want at least three years in QBO. Not desktop, online.
+[00:01:00] Nadine: Three years of QuickBooks Online. Got it.
+[00:01:03] Jennifer Walsh: We have a few clients on Xero. Two or three. So Xero would be nice but we can work around it.
+[00:01:10] Nadine: And payroll?
+[00:01:12] Jennifer Walsh: Oh, good question. Some clients run payroll through us in Gusto. That would be really nice to have. If they've never used Gusto, we can train, it's not hard. But nice to have.
+[00:01:24] Nadine: Gusto, nice to have. Any certifications you care about?
+[00:01:27] Jennifer Walsh: A degree in accounting or something close. They don't need to be a CPA, God no, that's what we're for. QuickBooks ProAdvisor would be a plus I guess.
+[00:01:38] Nadine: Okay. Hours?
+[00:01:40] Jennifer Walsh: This is where it gets a bit fuzzy. Normally I'd say, uh, thirty hours a week. But January to April it's tax season and we'd want them more, maybe full-time. Is that a problem?
+[00:01:53] Nadine: Not necessarily, we just need to be clear about it with candidates.
+[00:01:57] Jennifer Walsh: Let's say thirty hours, more in tax season. And they don't need to be online all day. But during our morning, like nine to twelve Mountain, they need to answer within a couple of hours.
+[00:02:09] Nadine: Nine to noon Mountain, responsive. Okay. Anything around security?
+[00:02:13] Jennifer Walsh: Yes. Two-factor on everything. No client files on personal devices. We use a remote desktop thing, they'd log into that. And a background check, our insurance requires it.
+[00:02:25] Nadine: Background check required. And start date?
+[00:02:28] Jennifer Walsh: Early January. Before we get buried in 1099s. So ideally they're trained by mid-January.
+[00:02:35] Nadine: Early January. And budget, what are you thinking—
+[00:02:38] Jennifer Walsh: Yeah, so what do people usually charge for this? Because I've heard—
+[00:02:41] [connection dropped]
+[00:03:20] Nadine: Jennifer? You're back.
+[00:03:22] Jennifer Walsh: Sorry, my internet died. Where were we?
+[00:03:24] Nadine: Uh, we were on start date, January.
+[00:03:27] Jennifer Walsh: Right, January. Oh, and one person. Just one for now.
+[00:03:31] Nadine: One bookkeeper. Who would they report to?
+[00:03:34] Jennifer Walsh: Tom, our senior accountant. He reviews everything before it goes to clients.
+[00:03:39] Nadine: And what does a great person look like to you?
+[00:03:42] Jennifer Walsh: Detail-oriented. Asks questions instead of guessing. If a transaction looks weird they flag it, they don't just dump it in "Ask My Accountant". And decent written English, because they'll email clients for missing receipts.
+[00:03:58] Nadine: Love that. Let me read it back: one bookkeeper, QuickBooks Online three plus years, Xero nice, Gusto nice, about thirty hours a week, more in tax season, responsive nine to noon Mountain, background check, start early January, reports to Tom.
+[00:04:15] Jennifer Walsh: That's it. Sorry, I have to jump to a client call.
+[00:04:18] Nadine: No problem! I'll send the job description for your approval.
+[00:04:21] Jennifer Walsh: Perfect, thanks Nadine. Bye.
