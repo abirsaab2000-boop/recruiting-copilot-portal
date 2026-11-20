@@ -18,7 +18,10 @@ Client call transcript ──▶ WF4  job description (only what the client said
                            WF5a shortlist (top 5 from WF2) ──▶ Slack: Approve / Decline for EACH candidate
                                                                                     │ approved
                                                                                     ▼
-                           WF5b GoHighLevel pipeline + email outreach that stops on reply  (test mode, see Status)
+                           WF5b GoHighLevel: contact + Candidates pipeline + 3 outreach emails that stop on reply
+                                                                                    │ candidate replies
+                                                                                    ▼
+                           WF6  stage → Replied in the database and portal, 💬 in Slack
 
 Recruiter asks in Slack ("who has 3+ years of GHL and speaks Arabic?") ──▶ WF7 ──▶ WF2 ──▶ top 5, each with score, reason and CV
 
@@ -44,10 +47,11 @@ WF3 asks the 10 test questions ──▶ marks every answer ──▶ score out 
 | `WF3_test_runner.json` | Manual | Asks the 10 test questions one at a time, marks each answer, saves the run and posts the score |
 | `WF4_job_descriptions.json` | Form: paste a call transcript | Gemini writes the job description. The code checks each requirement against a real line of the transcript and flags anything not confirmed. Then Slack approval, and an approved role starts WF5a |
 | `WF5a_shortlist_a_role.json` | Called by WF4 | Searches for the role's must-haves (nice-to-haves add points), saves the shortlist, and asks about each candidate |
-| `WF5b_approve_one_candidate.json` | Called by WF5a, once per candidate | Slack Approve / Decline → saves the decision → approved candidates go to GoHighLevel (test mode) |
+| `WF5b_approve_one_candidate.json` | Called by WF5a, once per candidate | Slack Approve / Decline → saves the decision → approved candidates are sent to GoHighLevel's outreach workflow → `mark_sent_to_ghl` (stage Contacted) → result in Slack |
+| `WF6_candidate_replied.json` | Called by GoHighLevel when a candidate replies | `ghl_reply` moves them to Replied in the database and portal, then posts 💬 in Slack |
 | `WF7_slack_qa_bot.json` | Every minute | Reads new questions in #ask-copilot and answers in the thread |
 
-Importing into another n8n instance: re-select the credentials (Postgres, Gemini, Slack, Google Drive) and the sub-workflows in each "Execute Workflow" node, set your CV folder in WF1a, and publish the sub-workflows first (WF5b → WF5a → WF4).
+Importing into another n8n instance: re-select the credentials (Postgres, Gemini, Slack, Google Drive) and the sub-workflows in each "Execute Workflow" node, set your CV folder in WF1a, put your GoHighLevel Inbound Webhook URL in WF5b and your `DEMO_INBOX` (or `''`) in its "Build GoHighLevel request" node, and publish the sub-workflows first (WF5b → WF5a → WF4). Publish WF6 and paste its production URL into GoHighLevel's reply workflow.
 
 ## Database (`supabase/`)
 
@@ -59,8 +63,13 @@ Run these in the Supabase SQL Editor, in this order:
 4. `wf4_roles_setup.sql`: roles (job descriptions) and approvals
 5. `wf5_shortlist_setup.sql`: shortlists, candidate decisions and pipeline stages
 6. `portal_setup.sql`: the read-only views the portal uses
+7. `wf5_ghl_live_update.sql`: GoHighLevel go-live (the outreach address, and `ghl_reply` for replies)
 
 All logic that must never be skipped (deduplication, "approved only", "once only") lives in these database functions, not in the workflows.
+
+## GoHighLevel (`ghl/`)
+
+Two GoHighLevel workflows, set up by hand (GoHighLevel workflows can't be exported as files). `ghl/README.md` lists every step and setting, and `ghl/outreach_emails.txt` has the three emails. No API key is needed: n8n posts to an Inbound Webhook trigger, and GoHighLevel posts back with a Webhook action.
 
 ## Test data and results (`test-data/`)
 
@@ -93,8 +102,8 @@ To run it on your computer: `python3 -m http.server 8000` in this folder, then o
 | Part | Status |
 |---|---|
 | CV search, Slack bot, test runner, job descriptions, shortlists and approvals, portal | Working |
-| GoHighLevel pipeline + outreach that stops on reply | **Test mode.** The sub-account login used has no API access yet (no Private Integrations). Approved candidates are tracked in the database and portal as "Contacted, test mode". Going live means replacing one node in WF5b with two GoHighLevel calls (create contact with tag `copilot-outreach`, create opportunity). The outreach itself is a GoHighLevel workflow with *Stop on response* on, and email only. |
-| Reply handling (WF6) | Waits for GoHighLevel API access: it will read stage changes from GoHighLevel and update the pipeline. |
+| GoHighLevel pipeline + outreach | **Working.** Approved candidates become contacts with a card in Candidates → Contacted, and the three outreach emails start (*Stop on response* on, email only). While testing, the emails go to the tester's own inbox (`DEMO_INBOX`). |
+| Reply handling (WF6) | **Built, not yet tested end to end.** Test replies come from the tester's main address, not the candidate's, so GoHighLevel files them under another contact (see `ghl/README.md`). Real candidates reply from their own address. |
 | CV intake from Google Drive | Built and tested with a stand-in download step; waits for the Google login on the n8n server. |
 | Slack bot | Checks the channel every minute, because Slack's event messages don't reach this n8n server. |
 | AI | Gemini free tier (fine for fake data only), with retries for its busy periods. |

@@ -1,0 +1,53 @@
+RECRUITING COPILOT · OUTREACH EMAILS (GoHighLevel workflow "Copilot · Candidate outreach")
+
+Fields in {{double braces}}: don't type them. Use the field picker in GoHighLevel's
+email editor (the "{ }" / custom values button), so they are inserted correctly:
+  {{contact.first_name}}                     → Contact → First Name
+  {{inboundWebhookRequest.role_title}}       → Inbound Webhook Trigger → role_title
+
+======================================================================
+EMAIL 1 · sent straight away
+======================================================================
+Subject:  A remote {{inboundWebhookRequest.role_title}} role
+
+Hi {{contact.first_name}},
+
+I'm Nadine from Cedar Remote Talent. We're hiring a remote {{inboundWebhookRequest.role_title}} for one of our US clients, and your experience stood out.
+
+Would you be open to a 15-minute call this week? Just reply to this email and I'll send you the details.
+
+Best,
+Nadine
+Cedar Remote Talent
+
+======================================================================
+WAIT 2 days
+======================================================================
+
+======================================================================
+EMAIL 2
+======================================================================
+Subject:  Following up on the remote role
+
+Hi {{contact.first_name}},
+
+Just checking you saw my note about the remote role. I can send you the full job description: reply "yes" and it's on its way.
+
+Nadine
+Cedar Remote Talent
+
+======================================================================
+WAIT 3 days
+======================================================================
+
+======================================================================
+EMAIL 3 · last one
+======================================================================
+Subject:  Should I close this for now?
+
+Hi {{contact.first_name}},
+
+I don't want to fill your inbox. If now isn't the right time, no problem: I'll keep your CV on file for future roles. If you are interested, just reply and we'll set up a call.
+
+Nadine
+Cedar Remote Talent
