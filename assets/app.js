@@ -512,9 +512,13 @@
         render();
       } catch (err) {
         btn.disabled = false; btn.textContent = 'Sign in';
-        out.textContent = err.status === 400 || err.status === 401
-          ? "That email and password don't match a portal login."
-          : `Couldn't sign in: ${err.message}`;
+        if (err.code === 'email_not_confirmed' || /not confirmed/i.test(err.message)) {
+          out.textContent = 'This login is not confirmed yet. In Supabase → Authentication → Users, confirm it, or create it again with "Auto Confirm User" ticked.';
+        } else if (err.status === 400 || err.status === 401) {
+          out.textContent = "That email and password don't match a portal login. Portal logins are the users in Supabase → Authentication → Users, not your Supabase account.";
+        } else {
+          out.textContent = `Couldn't sign in: ${err.message}`;
+        }
       }
     });
   }
